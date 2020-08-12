@@ -1,0 +1,24 @@
+{
+    "name": "sumologic-trigger",
+    "type": "trigger",
+    "execProgram": "node",
+    "main": "app.js",
+    "exposeRoute": true,
+    "imgUrl": "logo.png",
+    "version": "1.0.0",
+    "description": "Handle Sumo-logic alert trigger",
+    "methods": [
+      {
+        "name": "SEARCH_WEBHOOK",
+        "route": "post /webhook/sumologic/alert",
+        "viewName": "Sumo-logic alert webhook",
+        "params": [
+          {
+            "name": "SEARCH_NAME",
+            "viewName": "Search Name",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  }
