@@ -11,7 +11,7 @@
       {
         "name": "SEARCH_WEBHOOK",
         "route": "post /webhook/sumologic/alert",
-        "viewName": "Sumo-logic alert webhook",
+        "viewName": "Sumologic alert webhook",
         "params": [
           {
             "name": "SEARCH_NAME",
