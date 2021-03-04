@@ -1,0 +1,14 @@
+{
+  "name": "kaholo-trigger-sumologic",
+  "version": "1.1.0",
+  "description": "Kaholo trigger for Sumo-logic",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kaholo Group",
+  "license": "ISC",
+  "dependencies": {
+    "minimatch": "^3.0.4"
+  }
+}

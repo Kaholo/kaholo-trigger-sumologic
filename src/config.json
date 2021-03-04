@@ -1,0 +1,48 @@
+{
+    "name": "sumologic-trigger",
+    "type": "trigger",
+    "execProgram": "node",
+    "main": "app.js",
+    "exposeRoute": true,
+    "imgUrl": "logo.png",
+    "version": "1.1.0",
+    "description": "Handle Sumo-logic webhooks",
+    "methods": [
+      {
+        "name": "alertWebhook",
+        "route": "post /webhook/sumologic/alert",
+        "viewName": "Sumologic alert webhook",
+        "params": [
+          {
+            "name": "alertName",
+            "viewName": "Alert Name",
+            "type": "string"
+          },
+          {
+            "name": "alertType",
+            "viewName": "Alert Type",
+            "type": "options",
+            "options" : [
+              {
+                "id":"any",
+                "name":"Any"
+              },
+              {
+                "id":"Logs",
+                "name":"Logs"
+              },
+              {
+                "id":"Metrics",
+                "name":"Metrics"
+              }
+            ]
+          },
+          {
+            "name": "queryName",
+            "viewName": "Query Name",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  }
