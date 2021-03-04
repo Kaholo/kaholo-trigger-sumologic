@@ -1,35 +1,47 @@
-const config = require("./config");
-const mapExecutionService = require("../../../api/services/map-execution.service");
-const Trigger = require("../../../api/models/map-trigger.model");
+const { findTriggers } = require('./helpers')
+const minimatch = require("minimatch");
 
-function searchWebhook(req,res) {
-    let body = req.body
-    Trigger.find({ plugin: config.name }).then((triggers) => {
-        console.log(`Found ${triggers.length} triggers`);
-        res.send('OK');
-        triggers.forEach(trigger=>execTrigger(trigger,body,req.io))
-    }).catch((error) => res.send(error))
+const errMsg = "bad Sumo Logic webhook payload configuration";
+
+function alertWebhook(req, res) {
+    if (!req.body.hasOwnProperty("kaholo")){
+        throw errMsg;
+    }
+    const mData = req.body.kaholo;
+
+    const alertName = mData.name; // Get alert name
+    const alertType = mData.type; // Get alert type
+    const queryName = mData.queryName; // Get the query name that triggered the alert
+    const description = mData.description; // Get alert description
+    if (!alertName || !alertType || !queryName || !description){
+        throw errMsg;
+    }
+
+    findTriggers(
+        validateTrigger, { alertName, alertType, queryName },
+        req, res, 
+        "alertWebhook",
+        `${alertName}: ${description}`, // event description for kaholo
+    );
 }
 
-function execTrigger (trigger, body,io) {
-    new Promise ((resolve,reject) => {
-        const searchName = body.kaholo
-        const triggerSearchName = trigger.params.find(o => o.name === 'SEARCH_NAME');
-        if (searchName != triggerSearchName.value) {
-            console.log(searchName, triggerSearchName.value)
-            return reject("Not matching search name")
-        } else {
-            return resolve()
-        }
-    }).then(() => {
-        console.log(trigger.map);
-        let message = trigger.name + ' started by SumoLogic trigger'
-        console.log(`********** Sumo-Logic: executing map ${trigger.map} **********`);
-        mapExecutionService.execute(trigger.map,null,io,{config: trigger.configuration},message,body);
-    }).catch(err=>{
-        console.error(err);
-    })
+async function validateTrigger(trigger, { alertName, alertType, queryName }) {
+    const triggerAlertName = (trigger.params.find((o) => o.name === "alertName").value || "").trim();
+    const triggerAlertType = trigger.params.find((o) => o.name === "alertType").value || "any";
+    const triggerQueryName = (trigger.params.find((o) => o.name === "queryName").value || "").trim();
+    // if alert name was provided check it matches alert name in post request
+    if (triggerAlertName && !minimatch(alertName, triggerAlertName)) {
+      throw "Not same alert name";
+    }
+    // if alert name was provided check it matches alert name in post request
+    if (triggerAlertType !== "any" && alertType !== triggerAlertType) {
+      throw "Not same alert type";
+    }
+    // if query name was provided check it matches query name in post request
+    if (triggerQueryName && !minimatch(queryName, triggerQueryName)) {
+        throw "Not same query name";
+    }
+    return true;
 }
-module.exports = {
-    SEARCH_WEBHOOK: searchWebhook
-}
+
+module.exports = { alertWebhook }

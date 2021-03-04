@@ -5,17 +5,41 @@
     "main": "app.js",
     "exposeRoute": true,
     "imgUrl": "logo.png",
-    "version": "1.0.0",
-    "description": "Handle Sumo-logic alert trigger",
+    "version": "1.1.0",
+    "description": "Handle Sumo-logic webhooks",
     "methods": [
       {
-        "name": "SEARCH_WEBHOOK",
+        "name": "alertWebhook",
         "route": "post /webhook/sumologic/alert",
         "viewName": "Sumologic alert webhook",
         "params": [
           {
-            "name": "SEARCH_NAME",
-            "viewName": "Search Name",
+            "name": "alertName",
+            "viewName": "Alert Name",
+            "type": "string"
+          },
+          {
+            "name": "alertType",
+            "viewName": "Alert Type",
+            "type": "options",
+            "options" : [
+              {
+                "id":"any",
+                "name":"Any"
+              },
+              {
+                "id":"Logs",
+                "name":"Logs"
+              },
+              {
+                "id":"Metrics",
+                "name":"Metrics"
+              }
+            ]
+          },
+          {
+            "name": "queryName",
+            "viewName": "Query Name",
             "type": "string"
           }
         ]
