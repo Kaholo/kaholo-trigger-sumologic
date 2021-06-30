@@ -1,47 +1,35 @@
-const { findTriggers } = require('./helpers')
 const minimatch = require("minimatch");
 
 const errMsg = "bad Sumo Logic webhook payload configuration";
 
-function alertWebhook(req, res) {
-    if (!req.body.hasOwnProperty("kaholo")){
-        throw errMsg;
-    }
-    const mData = req.body.kaholo;
+function alertWebhook(req, res, settings, triggerControllers) {  
+    try {
+        if (!req.body.hasOwnProperty("kaholo")){
+            return res.status(400).send(errMsg);
+        }
+        const mData = req.body.kaholo;
+    
+        const reqName = mData.name; // Get alert name
+        const reqType = mData.type; // Get alert type
+        const reqQueryName = mData.queryName; // Get the query name that triggered the alert
+        const description = mData.description; // Get alert description
+        if (!reqName || !reqType || !reqQueryName || !description){
+            return res.status(400).send(errMsg);
+        }
+      
+        triggerControllers.forEach(trigger => {
+            const {alertName, alertType, queryName} = trigger.params;
+            if (alertName && !minimatch(reqName, alertName)) return;
+            if (alertType && alertType !== "any" && alertType !== reqType) return;
+            if (queryName && queryName !== reqQueryName) return;
 
-    const alertName = mData.name; // Get alert name
-    const alertType = mData.type; // Get alert type
-    const queryName = mData.queryName; // Get the query name that triggered the alert
-    const description = mData.description; // Get alert description
-    if (!alertName || !alertType || !queryName || !description){
-        throw errMsg;
+            trigger.execute(`${reqName}: ${description}`, mData);
+        });
+        res.status(200).send("OK");
     }
-
-    findTriggers(
-        validateTrigger, { alertName, alertType, queryName },
-        req, res, 
-        "alertWebhook",
-        `${alertName}: ${description}`, // event description for kaholo
-    );
-}
-
-async function validateTrigger(trigger, { alertName, alertType, queryName }) {
-    const triggerAlertName = (trigger.params.find((o) => o.name === "alertName").value || "").trim();
-    const triggerAlertType = trigger.params.find((o) => o.name === "alertType").value || "any";
-    const triggerQueryName = (trigger.params.find((o) => o.name === "queryName").value || "").trim();
-    // if alert name was provided check it matches alert name in post request
-    if (triggerAlertName && !minimatch(alertName, triggerAlertName)) {
-      throw "Not same alert name";
+    catch (err){
+      res.status(422).send(err.message);
     }
-    // if alert name was provided check it matches alert name in post request
-    if (triggerAlertType !== "any" && alertType !== triggerAlertType) {
-      throw "Not same alert type";
-    }
-    // if query name was provided check it matches query name in post request
-    if (triggerQueryName && !minimatch(queryName, triggerQueryName)) {
-        throw "Not same query name";
-    }
-    return true;
 }
 
 module.exports = { alertWebhook }
