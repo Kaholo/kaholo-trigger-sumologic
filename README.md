@@ -5,7 +5,7 @@ Kaholo trigger for Sumo Logic webhooks
 After installing the trigger on Kaholo, follow the steps described [here](https://help.sumologic.com/Manage/Connections-and-Integrations/Webhook-Connections/Set_Up_Webhook_Connections#Common_variables_for_alerts-9057) to link the webhook to your Sumo Logic account. 
 
 Please Notice! Sumo Logic asks you to define the JSON format sent to the webhook. You should the following JSON format when connecting it to Kaholo:
-{
+```{
   "kaholo": {
     "name": "{{Name}}",
     "queryName": "{{Query}}",
@@ -14,7 +14,7 @@ Please Notice! Sumo Logic asks you to define the JSON format sent to the webhook
   },
   "results": "{{ResultsJson}}"
 }
-
+```
 ## Method: Alert Webhook
 This triggers whenever there is an event sent from Sumo Logic to your webhook.
 
